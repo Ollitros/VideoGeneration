@@ -44,9 +44,45 @@ def train_model(input_shape, train_x, train_y, epochs, batch_size):
         if i % 10 == 0:
             # Makes predictions after each epoch and save into temp folder.
             prediction = model.generator.predict(train_x[0:2])
-            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=i + 0), prediction[0] * 255)
+            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=i + 200), prediction[0] * 255)
 
     model.save_weights()
+
+    # for epoch in range(epochs):
+    #     for i in range(train_x.shape[0]):
+    #         if i == 0:
+    #
+    #             # Train discriminator
+    #             batch_y = []
+    #             for i in range(batch_size):
+    #                 batch_y.append(train_x[i])
+    #
+    #             batch_noise = np.random.normal(0, 1, (batch_size, input_shape))
+    #             fake = model.generator.predict(batch_noise)
+    #             errD = model.train_discriminator(X=np.float32(fake)[:, :, :, :3], Y=batch_y)
+    #             errD_sum += errD[0]
+    #
+    #             # Train generator
+    #             errG = model.train_generator(X=batch_noise, Y=batch_y)
+    #             errG_sum += errG[0]
+    #         elif i == (train_x.shape[0] - 1):
+    #             break
+    #         else:
+    #             # Train discriminator
+    #             batch_x = []
+    #             for i in range(batch_size):
+    #                 batch_x.append(train_x[i])
+    #             batch_y = []
+    #             for i in range(batch_size):
+    #                 batch_y.append(train_x[i + 1])
+    #
+    #             fake = model.generator.predict(batch_x)
+    #             errD = model.train_discriminator(X=np.float32(fake)[:, :, :, :3], Y=batch_y)
+    #             errD_sum += errD[0]
+    #
+    #             # Train generator
+    #             errG = model.train_generator(X=batch_x, Y=batch_y)
+    #             errG_sum += errG[0]
 
 
 def main():
