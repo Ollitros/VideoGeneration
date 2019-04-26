@@ -119,7 +119,6 @@ class GAN:
         fig.savefig("data/images/frame_%d.png" % epoch)
         plt.close()
 
-
     def train(self, train_x, epochs, batch_size=128, save_interval=50):
 
         # Adversarial ground truths
