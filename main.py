@@ -12,7 +12,7 @@ def train_model(input_shape, train_x, epochs, batch_size):
     display_iters = 1
 
     t0 = time.time()
-    # model.load_weights()
+    model.load_weights()
     for epoch in range(epochs):
         for i in range(train_x.shape[0]):
             if i == 0:
@@ -58,10 +58,10 @@ def train_model(input_shape, train_x, epochs, batch_size):
             print("----------")
             display_iters = display_iters + 1
 
-        if epoch % 10 == 0:
+        if epoch % 1 == 0:
             # Makes predictions after each epoch and save into temp folder.
             prediction = model.generator.predict(train_x[0:2])
-            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 0), prediction[0] * 255)
+            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 400), prediction[0] * 255)
 
     model.save_weights()
 
@@ -73,7 +73,7 @@ def main():
     X = X.astype('float32')
     X /= 255
 
-    epochs = 10
+    epochs = 100
     batch_size = 5
     input_shape = (64, 64, 3)
 
@@ -85,16 +85,3 @@ if __name__ == '__main__':
     main()
 
 
-# X = np.load("data/rawX.npy")
-# print(X.shape)
-# array = []
-# for i in range(X.shape[0]):
-#     temp = cv.resize(X[i], (64, 64))
-#     array.append(temp)
-# np.save('data/X.npy', np.asarray(array))
-#
-# X = np.load('data/X.npy')
-# print(X.shape)
-# for i in range(X.shape[0]):
-#     cv.imshow('frame', X[i])
-#     cv.waitKey(0)
