@@ -14,20 +14,18 @@ def train_model(input_shape, train_x, train_y, epochs, batch_size):
     t0 = time.time()
     iters = train_x.shape[0] // batch_size
 
-    # model.load_weights()
+    model.load_weights()
     for i in range(epochs):
-        print("######################################################\n"
-              "GLOBAL EPOCH --------------------------------------- {i}".format(i=i),
-              "\n######################################################\n")
 
-        # Train discriminators
+        # Train discriminator
         step = 0
         for iter in range(iters):
-            errD = model.train_discriminator(X=train_x[step:step + batch_size], Y=train_y[step:step + batch_size])
+            fake = model.generator.predict(train_x[step:step + batch_size])
+            errD = model.train_discriminator(X=np.float32(fake)[:, :, :, :3], Y=train_y[step:step + batch_size])
             step = step + batch_size
         errD_sum += errD[0]
 
-        # Train generators
+        # Train generator
         step = 0
         for iter in range(iters):
             errG = model.train_generator(X=train_x[step:step + batch_size], Y=train_y[step:step + batch_size])
@@ -43,10 +41,10 @@ def train_model(input_shape, train_x, train_y, epochs, batch_size):
             print("----------")
             display_iters = display_iters + 1
 
-        # Makes predictions after each epoch and save into temp folder.
-        prediction = model.encoder.predict(X[0:2])
-        prediction = model.dst_decoder.predict(prediction)
-        cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=i + 0), prediction[0] * 255)
+        if i % 10 == 0:
+            # Makes predictions after each epoch and save into temp folder.
+            prediction = model.generator.predict(train_x[0:2])
+            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=i + 0), prediction[0] * 255)
 
     model.save_weights()
 
@@ -54,13 +52,13 @@ def train_model(input_shape, train_x, train_y, epochs, batch_size):
 def main():
 
     # Load the dataset
-    X = np.load('data/X.npy')
+    X = np.load('data/source/X.npy')
     X = X.astype('float32')
     X /= 255
 
-    epochs = 3
+    epochs = 100
     batch_size = 5
-    input_shape = X.shape
+    input_shape = (64, 64, 3)
 
     train_x = []
     for i in range(100):
@@ -69,7 +67,13 @@ def main():
     for i in range(100):
         train_y.append(X[10])
 
+    train_x = np.asarray(train_x)
+    train_y = np.asarray(train_y)
     train_model(input_shape=input_shape, train_x=train_x, train_y=train_y, epochs=epochs, batch_size=batch_size)
+
+
+if __name__ == '__main__':
+    main()
 
 
 # X = np.load("data/rawX.npy")

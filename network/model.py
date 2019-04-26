@@ -142,14 +142,14 @@ class Gan:
         for loss_tensor in self.discriminator.losses:
             loss_dis += loss_tensor
 
-        weights_src_dis = self.discriminator.trainable_weights
-        weights_src_gen = self.generator.trainable_weights
+        weights_dis = self.discriminator.trainable_weights
+        weights_gen = self.generator.trainable_weights
 
         # Define training functions
         lr_factor = 1
-        training_updates = Adam(lr=self.lrD * lr_factor, beta_1=0.5).get_updates(weights_src_dis, [], loss_dis)
+        training_updates = Adam(lr=self.lrD * lr_factor, beta_1=0.5).get_updates(weights_dis, [], loss_dis)
         self.net_dis_train = K.function([self.distorted, self.real], [loss_dis], training_updates)
-        training_updates = Adam(lr=self.lrG * lr_factor, beta_1=0.5).get_updates(weights_src_gen, [], loss_gen)
+        training_updates = Adam(lr=self.lrG * lr_factor, beta_1=0.5).get_updates(weights_gen, [], loss_gen)
         self.net_gen_train = K.function([self.distorted, self.real], [loss_gen, loss_adv_gen], training_updates)
 
     def load_weights(self, path="data/models"):
@@ -174,4 +174,3 @@ class Gan:
 
         return err_dis
 
-generator = Gan((64, 64, 3), (64, 64, 6))
