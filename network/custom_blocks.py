@@ -2,6 +2,8 @@ from keras.layers import *
 from keras_contrib.layers.normalization.instancenormalization import InstanceNormalization
 from network.custom_layers import PixelShuffler, Scale
 import keras.backend as K
+import tensorflow as tf
+
 
 conv_init = 'he_normal'
 w_l2 = 1e-4

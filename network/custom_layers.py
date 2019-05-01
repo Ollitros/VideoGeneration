@@ -113,3 +113,5 @@ class Scale(Layer):
         config = {"axis": self.axis}
         base_config = super(Scale, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+

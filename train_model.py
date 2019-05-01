@@ -5,6 +5,12 @@ from network.model import Gan
 
 
 def train_model(input_shape, train_x, epochs, batch_size):
+    """
+        In standard GANs discriminator take input from generator and from real data, then tries to classify them.
+        This implementation works different - discriminator take both inputs as real data, but the main process
+        is going in adversarial loss which overcompensate standard approach. Such implementation verified experimentally.
+
+    """
     model = Gan(input_shape=input_shape, image_shape=(64, 64, 6))
     model.build_train_functions()
 
@@ -16,8 +22,8 @@ def train_model(input_shape, train_x, epochs, batch_size):
 
     iters = np.asarray(train_x).shape[0] // batch_size
     if np.asarray(train_x).shape[0] - iters * batch_size == 0:
+        train_x = train_x.tolist()
         train_x.append(train_x[-1])
-
     train_x = np.asarray(train_x)
     for epoch in range(epochs):
 
@@ -27,8 +33,7 @@ def train_model(input_shape, train_x, epochs, batch_size):
         for f in range(batch_size):
             batch_y.append(train_x[0])
         batch_noise = np.random.normal(0, 1, (batch_size, input_shape[0], input_shape[1], input_shape[2]))
-        fake = model.generator.predict(batch_noise)
-        errD = model.train_discriminator(X=np.float32(fake)[:, :, :, :3], Y=batch_y)
+        errD = model.train_discriminator(X=batch_noise, Y=batch_y)
         errD_sum += errD[0]
         # Train generator
         errG = model.train_generator(X=batch_noise, Y=batch_y)
@@ -38,8 +43,7 @@ def train_model(input_shape, train_x, epochs, batch_size):
         # Train discriminator
         step = 0
         for iter in range(iters):
-            fake = model.generator.predict(train_x[step: (step + batch_size)])
-            errD = model.train_discriminator(X=np.float32(fake)[:, :, :, :3],  Y=train_x[(step+1): (step+1 + batch_size)])
+            errD = model.train_discriminator(X=train_x[(step + 1): (step + 1 + batch_size)], Y=train_x[(step + 1): (step + 1 + batch_size)])
             step = step + batch_size
         errD_sum += errD[0]
 
@@ -58,10 +62,10 @@ def train_model(input_shape, train_x, epochs, batch_size):
             print("----------")
             display_iters = display_iters + 1
 
-        if epoch % 1 == 0:
+        if epoch % 10 == 0:
             # Makes predictions after each epoch and save into temp folder.
             prediction = model.generator.predict(train_x[0:2])
-            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 1900), prediction[0] * 255)
+            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 2000), prediction[0] * 255)
 
     model.save_weights()
 
@@ -69,14 +73,14 @@ def train_model(input_shape, train_x, epochs, batch_size):
 def main():
 
     # Load the dataset
-    X = np.load('data/source/X.npy')
+    X = np.load('data/source/hX.npy')
     X = X.astype('float32')
     X /= 255
 
-    epochs = 100
+    epochs = 1000
     batch_size = 5
     input_shape = (64, 64, 3)
-
+    X = X[0:10]
     train_model(input_shape=input_shape, train_x=X, epochs=epochs, batch_size=batch_size)
 
 
