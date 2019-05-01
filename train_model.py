@@ -32,7 +32,8 @@ def train_model(input_shape, train_x, epochs, batch_size):
         batch_y = []
         for f in range(batch_size):
             batch_y.append(train_x[0])
-        batch_noise = np.random.normal(0, 1, (batch_size, input_shape[0], input_shape[1], input_shape[2]))
+
+        batch_noise = np.ones((batch_size, input_shape[0], input_shape[1], input_shape[2]))
         errD = model.train_discriminator(X=batch_noise, Y=batch_y)
         errD_sum += errD[0]
         # Train generator
@@ -65,7 +66,8 @@ def train_model(input_shape, train_x, epochs, batch_size):
         if epoch % 10 == 0:
             # Makes predictions after each epoch and save into temp folder.
             prediction = model.generator.predict(train_x[0:2])
-            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 170), prediction[0] * 255)
+            prediction = np.float32(prediction[0] * 255)[:, :, 1:4]
+            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 400), prediction)
             model.save_weights()
 
     model.save_weights()
@@ -78,7 +80,7 @@ def main():
     X = X.astype('float32')
     X /= 255
 
-    epochs = 30
+    epochs = 100
     batch_size = 5
     input_shape = (64, 64, 3)
     train_model(input_shape=input_shape, train_x=X, epochs=epochs, batch_size=batch_size)
