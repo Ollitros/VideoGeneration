@@ -14,7 +14,7 @@ def main():
     model.load_weights()
 
     # Writes video
-    frames = 300
+    frames = 500
 
     ones = np.ones((1, 64, 64, 3))
     prediction = model.generator.predict(ones)
@@ -38,7 +38,7 @@ def main():
         size = (width, height)
         img_array.append(img)
 
-    out = cv2.VideoWriter('data/gen_video.avi', cv2.VideoWriter_fourcc(*'DIVX'), 25, size)
+    out = cv2.VideoWriter('data/gen_video/h_gen_video.avi', cv2.VideoWriter_fourcc(*'DIVX'), 20, size)
 
     for i in range(len(img_array)):
         out.write(img_array[i])
