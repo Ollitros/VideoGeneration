@@ -16,8 +16,8 @@ def main():
     # Writes video
     frames = 500
 
-    ones = np.ones((1, 64, 64, 3))
-    prediction = model.generator.predict(ones)
+    noise = np.random.normal(0, 1, (1, 64, 64, 3))
+    prediction = model.generator.predict(noise)
     prediction = np.float32(prediction)[:, :, :, 1:4]
     cv2.imwrite('data/gen_frames/frame{i}.jpg'.format(i=0), np.reshape(prediction * 255, [size[0], size[1], size[2]]))
     for i in range(frames):
@@ -38,7 +38,7 @@ def main():
         size = (width, height)
         img_array.append(img)
 
-    out = cv2.VideoWriter('data/gen_video/h_gen_video.avi', cv2.VideoWriter_fourcc(*'DIVX'), 20, size)
+    out = cv2.VideoWriter('data/gen_video/gen_video.avi', cv2.VideoWriter_fourcc(*'DIVX'), 20, size)
 
     for i in range(len(img_array)):
         out.write(img_array[i])

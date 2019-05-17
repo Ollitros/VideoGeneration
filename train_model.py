@@ -67,7 +67,7 @@ def train_model(input_shape, train_x, epochs, batch_size):
             # Makes predictions after each epoch and save into temp folder.
             prediction = model.generator.predict(train_x[0:2])
             prediction = np.float32(prediction[0] * 255)[:, :, 1:4]
-            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 2000), prediction)
+            cv.imwrite('data/models/temp/image{epoch}.jpg'.format(epoch=epoch + 0), prediction)
             model.save_weights()
 
     model.save_weights()
@@ -76,7 +76,7 @@ def train_model(input_shape, train_x, epochs, batch_size):
 def main():
 
     # Load the dataset
-    X = np.load('data/source/hX.npy')
+    X = np.load('data/source/X.npy')
     X = X.astype('float32')
     X /= 255
 

@@ -1,6 +1,7 @@
 from keras.layers import Lambda, concatenate
 from tensorflow.contrib.distributions import Beta
 import keras.backend as K
+import tensorflow as tf
 
 """ 
     Loss implementations 
@@ -71,3 +72,28 @@ def adversarial_loss(netD, real, fake_abgr, distorted, gan_training="mixup_LSGAN
     else:
         raise ValueError("Receive an unknown GAN training method: {gan_training}")
     return loss_D, loss_G
+
+
+def reconstruction_loss(real, fake_abgr, model_outputs, weights):
+    alpha = Lambda(lambda x: x[:, :, :, :1])(fake_abgr)
+    fake_bgr = Lambda(lambda x: x[:, :, :, 1:])(fake_abgr)
+
+    loss_G = 0
+    loss_G += weights['w_recon'] * calc_loss(fake_bgr, real, "l1")
+
+    for out in model_outputs[:-1]:
+        out_size = out.get_shape().as_list()
+        resized_real = tf.image.resize_images(real, out_size[1:3])
+        loss_G += weights['w_recon'] * calc_loss(out, resized_real, "l1")
+    return loss_G
+
+
+def edge_loss(real, fake_abgr, weights):
+    alpha = Lambda(lambda x: x[:, :, :, :1])(fake_abgr)
+    fake_bgr = Lambda(lambda x: x[:, :, :, 1:])(fake_abgr)
+
+    loss_G = 0
+    loss_G += weights['w_edge'] * calc_loss(first_order(fake_bgr, axis=1), first_order(real, axis=1), "l1")
+    loss_G += weights['w_edge'] * calc_loss(first_order(fake_bgr, axis=2), first_order(real, axis=2), "l1")
+
+    return loss_G

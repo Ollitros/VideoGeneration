@@ -124,12 +124,24 @@ class Gan:
 
     def build_train_functions(self):
 
+        weights = {}
+        weights['w_D'] = 0.1  # Discriminator
+        weights['w_recon'] = 1.  # L1 reconstruction loss
+        weights['w_edge'] = 0.1  # edge loss
+        weights['w_eyes'] = 30.  # reconstruction and edge loss on eyes area
+        weights['w_pl'] = (0.01, 0.1, 0.3, 0.1)  # perceptual loss (0.003, 0.03, 0.3, 0.3)
+
         # Adversarial loss
         loss_dis, loss_adv_gen = adversarial_loss(self.discriminator, self.real, self.fake, self.distorted)
-        loss_gen = loss_adv_gen
 
-        # Alpha mask loss
-        loss_gen += 1e-2 * K.mean(K.abs(self.mask))
+        # Reconstruction loss
+        loss_recon_gen = reconstruction_loss(self.real, self.fake, self.generator.outputs, weights=weights)
+
+        # Edge loss
+        loss_edge_gen = edge_loss(self.real, self.fake, weights=weights)
+
+        # Losses
+        loss_gen = loss_adv_gen + loss_recon_gen + loss_edge_gen
 
         # Alpha mask total variation loss
         loss_gen += 0.1 * K.mean(first_order(self.mask, axis=1))
@@ -149,8 +161,10 @@ class Gan:
         lr_factor = 1
         training_updates = Adam(lr=self.lrD * lr_factor, beta_1=0.5).get_updates(weights_dis, [], loss_dis)
         self.net_dis_train = K.function([self.distorted, self.real], [loss_dis], training_updates)
+
         training_updates = Adam(lr=self.lrG * lr_factor, beta_1=0.5).get_updates(weights_gen, [], loss_gen)
-        self.net_gen_train = K.function([self.distorted, self.real], [loss_gen, loss_adv_gen], training_updates)
+        self.net_gen_train = K.function([self.distorted, self.real],
+                                        [loss_gen, loss_adv_gen, loss_recon_gen + loss_edge_gen], training_updates)
 
     def load_weights(self, path="data/models"):
         self.generator.load_weights("{path}/generator.h5".format(path=path))
